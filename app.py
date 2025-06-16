@@ -458,28 +458,39 @@ def add_attendance():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 检查该员工当天是否已有考勤记录
-        cursor.execute("""
-            SELECT id FROM attendance 
-            WHERE employee_id = ? AND date = ?
-        """, (employee_id, date))
-        existing = cursor.fetchone()
-        
-        if existing:
-            # 更新现有记录
+        # 检查是否有ID参数（编辑模式）
+        if 'id' in request.form and request.form['id']:
+            # 更新指定ID的记录
+            attendance_id = request.form['id']
             cursor.execute("""
                 UPDATE attendance
-                SET check_in = ?, check_out = ?, overtime_hours = ?, status = ?, note = ?
+                SET employee_id = ?, date = ?, check_in = ?, check_out = ?, overtime_hours = ?, status = ?, note = ?
                 WHERE id = ?
-            """, (check_in, check_out, overtime_hours, status, note, existing[0]))
+            """, (employee_id, date, check_in, check_out, overtime_hours, status, note, attendance_id))
             flash('考勤记录已更新', 'success')
         else:
-            # 添加新记录
+            # 检查该员工当天是否已有考勤记录
             cursor.execute("""
-                INSERT INTO attendance (employee_id, date, check_in, check_out, overtime_hours, status, note)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (employee_id, date, check_in, check_out, overtime_hours, status, note))
-            flash('考勤记录添加成功', 'success')
+                SELECT id FROM attendance 
+                WHERE employee_id = ? AND date = ?
+            """, (employee_id, date))
+            existing = cursor.fetchone()
+            
+            if existing:
+                # 更新现有记录
+                cursor.execute("""
+                    UPDATE attendance
+                    SET check_in = ?, check_out = ?, overtime_hours = ?, status = ?, note = ?
+                    WHERE id = ?
+                """, (check_in, check_out, overtime_hours, status, note, existing[0]))
+                flash('考勤记录已更新', 'success')
+            else:
+                # 添加新记录
+                cursor.execute("""
+                    INSERT INTO attendance (employee_id, date, check_in, check_out, overtime_hours, status, note)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (employee_id, date, check_in, check_out, overtime_hours, status, note))
+                flash('考勤记录添加成功', 'success')
         
         conn.commit()
         conn.close()
@@ -697,6 +708,45 @@ def api_employees():
     conn.close()
     
     return jsonify(employees)
+
+# API接口 - 获取考勤记录详情
+@app.route('/api/attendance/<int:id>')
+@login_required
+def api_attendance_detail(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # 获取考勤记录
+    cursor.execute("""
+        SELECT a.id, a.employee_id, e.name, a.date, a.check_in, a.check_out, 
+               a.overtime_hours, a.status, a.note
+        FROM attendance a
+        JOIN employees e ON a.employee_id = e.id
+        WHERE a.id = ?
+    """, (id,))
+    
+    attendance = cursor.fetchone()
+    conn.close()
+    
+    if not attendance:
+        return jsonify({'error': '考勤记录不存在'}), 404
+    
+    # 格式化日期和时间
+    date_str = attendance[3].strftime('%Y-%m-%d') if attendance[3] else ''
+    check_in_str = attendance[4].strftime('%H:%M') if attendance[4] else ''
+    check_out_str = attendance[5].strftime('%H:%M') if attendance[5] else ''
+    
+    return jsonify({
+        'id': attendance[0],
+        'employee_id': attendance[1],
+        'employee_name': attendance[2],
+        'date': date_str,
+        'check_in': check_in_str,
+        'check_out': check_out_str,
+        'overtime_hours': attendance[6],
+        'status': attendance[7],
+        'note': attendance[8]
+    })
 
 # API接口 - 获取部门员工
 @app.route('/api/departments/<int:id>/employees')

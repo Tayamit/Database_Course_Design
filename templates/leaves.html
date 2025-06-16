@@ -40,15 +40,15 @@
                         <td>{{ leave[1] }}</td>
                         <td>
                             {% if leave[5] == 'sick' %}
-                                <span class="badge bg-danger">病假</span>
+                                病假
                             {% elif leave[5] == 'casual' %}
-                                <span class="badge bg-info">事假</span>
+                                事假
                             {% elif leave[5] == 'annual' %}
-                                <span class="badge bg-success">年假</span>
+                                年假
                             {% elif leave[5] == 'maternity' %}
-                                <span class="badge bg-warning">产假</span>
+                                产假
                             {% else %}
-                                <span class="badge bg-secondary">其它</span>
+                                其它
                             {% endif %}
                         </td>
                         <td>{{ leave[2].strftime('%Y-%m-%d') if leave[2] else '' }}</td>

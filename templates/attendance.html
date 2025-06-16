@@ -57,13 +57,13 @@
                         <td>{{ attendance[5] }}</td>
                         <td>
                             {% if attendance[6] == 'present' %}
-                            <span class="badge bg-success">出勤</span>
+                            出勤
                             {% elif attendance[6] == 'absent' %}
-                            <span class="badge bg-danger">缺勤</span>
+                            缺勤
                             {% elif attendance[6] == 'half-day' %}
-                            <span class="badge bg-warning">半天</span>
+                            半天
                             {% else %}
-                            <span class="badge bg-info">请假</span>
+                            请假
                             {% endif %}
                         </td>
                         <td>{{ attendance[7] }}</td>
@@ -221,6 +221,67 @@
         </div>
     </div>
 </div>
+
+<!-- 编辑考勤记录模态框 -->
+<div class="modal fade" id="editAttendanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit"></i> 编辑考勤记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('add_attendance') }}" method="post" id="editAttendanceForm">
+                <div class="modal-body">
+                    <input type="hidden" id="edit_id" name="id">
+                    <div class="mb-3">
+                        <label for="edit_employee_id" class="form-label">员工</label>
+                        <select class="form-select" id="edit_employee_id" name="employee_id" required>
+                            <option value="" selected disabled>选择员工</option>
+                            {% for employee in employees %}
+                            <option value="{{ employee[0] }}">{{ employee[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_date" class="form-label">日期</label>
+                        <input type="date" class="form-control" id="edit_date" name="date" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="edit_check_in" class="form-label">签到时间</label>
+                            <input type="time" class="form-control" id="edit_check_in" name="check_in">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_check_out" class="form-label">签退时间</label>
+                            <input type="time" class="form-control" id="edit_check_out" name="check_out">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_overtime_hours" class="form-label">加班小时数</label>
+                        <input type="number" class="form-control" id="edit_overtime_hours" name="overtime_hours" step="0.5" min="0" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_status" class="form-label">考勤状态</label>
+                        <select class="form-select" id="edit_status" name="status" required>
+                            <option value="present">出勤</option>
+                            <option value="absent">缺勤</option>
+                            <option value="half-day">半天</option>
+                            <option value="leave">请假</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_note" class="form-label">备注</label>
+                        <textarea class="form-control" id="edit_note" name="note" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存更改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -305,8 +366,28 @@
     }
     
     function editAttendance(id) {
-        // 这里可以实现编辑功能，通过Ajax获取数据并填充表单
-        alert('编辑考勤记录：' + id);
+        // 通过AJAX获取考勤记录数据
+        $.ajax({
+            url: '/api/attendance/' + id,
+            type: 'GET',
+            success: function(data) {
+                // 填充表单数据
+                $('#edit_id').val(id);
+                $('#edit_employee_id').val(data.employee_id);
+                $('#edit_date').val(data.date);
+                $('#edit_check_in').val(data.check_in);
+                $('#edit_check_out').val(data.check_out);
+                $('#edit_overtime_hours').val(data.overtime_hours);
+                $('#edit_status').val(data.status);
+                $('#edit_note').val(data.note);
+                
+                // 显示编辑模态框
+                $('#editAttendanceModal').modal('show');
+            },
+            error: function() {
+                alert('获取考勤记录数据失败');
+            }
+        });
     }
 </script>
 {% endblock %}
