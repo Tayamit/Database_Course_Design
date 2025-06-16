@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}编辑员工 - 员工管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-user-edit"></i> 编辑员工</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('employees') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回员工列表
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">员工信息</h6>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('edit_employee', id=employee[0]) }}" method="post">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="name" class="form-label">姓名</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ employee[1] }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="email" class="form-label">邮箱</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ employee[2] }}" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="phone" class="form-label">电话</label>
+                    <input type="text" class="form-control" id="phone" name="phone" value="{{ employee[3] }}">
+                </div>
+                <div class="col-md-6">
+                    <label for="department_id" class="form-label">部门</label>
+                    <select class="form-select" id="department_id" name="department_id" required>
+                        {% for dept in departments %}
+                        <option value="{{ dept[0] }}" {% if dept[0] == employee[4] %}selected{% endif %}>{{ dept[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="position" class="form-label">职位</label>
+                    <input type="text" class="form-control" id="position" name="position" value="{{ employee[5] }}">
+                </div>
+                <div class="col-md-6">
+                    <label for="salary" class="form-label">薪资</label>
+                    <input type="number" class="form-control" id="salary" name="salary" value="{{ employee[6] }}" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存修改
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 员工详情卡片 -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">考勤信息</h6>
+            </div>
+            <div class="card-body">
+                <p>考勤率: <strong>92%</strong></p>
+                <div class="progress mb-4">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 92%" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <p>本月出勤: <strong>21</strong> 天</p>
+                <p>本月请假: <strong>1</strong> 天</p>
+                <p>本月缺勤: <strong>0</strong> 天</p>
+                <div class="text-end">
+                    <button class="btn btn-sm btn-info">查看详细考勤记录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">薪资信息</h6>
+            </div>
+            <div class="card-body">
+                <p>基本工资: <strong>￥{{ employee[6] }}</strong></p>
+                <p>绩效奖金: <strong>￥2000</strong></p>
+                <p>五险一金: <strong>￥1500</strong></p>
+                <p>实发工资: <strong>￥{{ employee[6] + 2000 - 1500 }}</strong></p>
+                <div class="text-end">
+                    <button class="btn btn-sm btn-info">查看薪资历史</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .form-label {
+        font-weight: 500;
+    }
+</style>
+{% endblock %} 

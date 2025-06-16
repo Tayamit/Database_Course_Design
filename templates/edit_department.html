@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}编辑部门 - 员工管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-edit"></i> 编辑部门</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('departments') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回部门列表
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">部门信息</h6>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('edit_department', id=department[0]) }}" method="post">
+            <div class="mb-3">
+                <label for="name" class="form-label">部门名称</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ department[1] }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">部门描述</label>
+                <textarea class="form-control" id="description" name="description" rows="4">{{ department[2] }}</textarea>
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 保存修改
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 部门详情卡片 -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">部门员工</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="deptEmployeesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>姓名</th>
+                                <th>职位</th>
+                                <th>入职日期</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>张三</td>
+                                <td>部门经理</td>
+                                <td>2021-01-15</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>李四</td>
+                                <td>高级工程师</td>
+                                <td>2021-03-20</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>王五</td>
+                                <td>工程师</td>
+                                <td>2022-05-10</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">部门统计</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <p><strong>员工总数:</strong> 12 人</p>
+                    <p><strong>平均薪资:</strong> ¥10,500</p>
+                    <p><strong>成立时间:</strong> 2020-01-01</p>
+                </div>
+                <hr>
+                <h6 class="font-weight-bold">员工分布</h6>
+                <div class="mb-1">
+                    <div class="d-flex justify-content-between">
+                        <span>管理人员</span>
+                        <span>2 人 (16.7%)</span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 16.7%" aria-valuenow="16.7" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                <div class="mb-1">
+                    <div class="d-flex justify-content-between">
+                        <span>技术人员</span>
+                        <span>8 人 (66.7%)</span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 66.7%" aria-valuenow="66.7" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                <div class="mb-1">
+                    <div class="d-flex justify-content-between">
+                        <span>支持人员</span>
+                        <span>2 人 (16.7%)</span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 16.7%" aria-valuenow="16.7" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#deptEmployeesTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Chinese.json'
+            },
+            responsive: true
+        });
+    });
+</script>
+{% endblock %} 

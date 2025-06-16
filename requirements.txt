@@ -1,0 +1,5 @@
+Flask==2.3.2
+pyodbc==4.0.39
+Werkzeug==2.3.6
+Jinja2==3.1.2
+itsdangerous==2.1.2 

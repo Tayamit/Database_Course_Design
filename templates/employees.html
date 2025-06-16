@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}员工管理 - 员工管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-users"></i> 员工管理</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+            <i class="fas fa-plus"></i> 添加员工
+        </button>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="m-0 font-weight-bold text-primary">员工列表</h6>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchEmployee" placeholder="搜索员工...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="employeesTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>姓名</th>
+                        <th>邮箱</th>
+                        <th>电话</th>
+                        <th>部门</th>
+                        <th>职位</th>
+                        <th>入职日期</th>
+                        <th>薪资</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td>{{ employee[0] }}</td>
+                        <td>{{ employee[1] }}</td>
+                        <td>{{ employee[2] }}</td>
+                        <td>{{ employee[3] }}</td>
+                        <td>{{ employee[5] }}</td>
+                        <td>{{ employee[6] }}</td>
+                        <td>{{ employee[4].strftime('%Y-%m-%d') if employee[4] else '' }}</td>
+                        <td>{{ employee[7] }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_employee', id=employee[0]) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-danger" 
+                               onclick="confirmDelete('{{ url_for('delete_employee', id=employee[0]) }}')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 添加员工模态框 -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-plus"></i> 添加员工</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('add_employee') }}" method="post">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">姓名</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">邮箱</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">电话</label>
+                            <input type="text" class="form-control" id="phone" name="phone">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="department_id" class="form-label">部门</label>
+                            <select class="form-select" id="department_id" name="department_id" required>
+                                <option value="" selected disabled>选择部门</option>
+                                {% for dept in departments %}
+                                <option value="{{ dept[0] }}">{{ dept[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="position" class="form-label">职位</label>
+                            <input type="text" class="form-control" id="position" name="position">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="salary" class="form-label">薪资</label>
+                            <input type="number" class="form-control" id="salary" name="salary" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 确认删除模态框 -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                确定要删除该员工吗？此操作不可恢复！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">确定删除</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#employeesTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Chinese.json'
+            }
+        });
+        
+        $('#searchEmployee').on('keyup', function() {
+            $('#employeesTable').DataTable().search(this.value).draw();
+        });
+    });
+    
+    function confirmDelete(url) {
+        $('#confirmDeleteBtn').attr('href', url);
+        $('#deleteConfirmModal').modal('show');
+        return false;
+    }
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .table th, .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %} 

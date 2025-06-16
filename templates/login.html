@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}登录 - 员工管理系统{% endblock %}
+
+{% block styles %}
+<style>
+    .login-container {
+        max-width: 450px;
+        margin: 0 auto;
+        margin-top: 100px;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+    .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .login-header h2 {
+        color: #3498db;
+        font-weight: 600;
+    }
+    .login-form .form-control {
+        height: 45px;
+        font-size: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .login-form .form-control:focus {
+        box-shadow: none;
+        border-color: #3498db;
+    }
+    .login-form .btn-login {
+        height: 45px;
+        font-size: 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        background-color: #3498db;
+        border: none;
+    }
+    .login-form .btn-login:hover {
+        background-color: #2980b9;
+    }
+    body {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-header">
+        <h2><i class="fas fa-users"></i> 员工管理系统</h2>
+        <p class="text-muted">请登录您的账号</p>
+    </div>
+    <div class="login-form">
+        <form method="post" action="{{ url_for('login') }}">
+            <div class="mb-3">
+                <label for="username" class="form-label">用户名</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="请输入用户名" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">密码</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码" required>
+                </div>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="remember">
+                <label class="form-check-label" for="remember">记住我</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-login w-100">登录</button>
+        </form>
+        <div class="text-center mt-3">
+            <p class="text-muted">测试账号: admin / admin123</p>
+        </div>
+    </div>
+</div>
+{% endblock %} 

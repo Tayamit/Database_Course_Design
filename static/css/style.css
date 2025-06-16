@@ -1,0 +1,195 @@
+/* 全局样式 */
+body {
+    font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fc;
+    color: #333;
+}
+
+/* 导航栏样式 */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar .nav-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.navbar .nav-link .fas {
+    margin-right: 5px;
+}
+
+/* 卡片样式 */
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+}
+
+/* 表格样式 */
+.table thead th {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+    font-weight: 600;
+}
+
+.table-bordered td, .table-bordered th {
+    border: 1px solid #e3e6f0;
+}
+
+/* 按钮样式 */
+.btn {
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #3a5ccf;
+    border-color: #3a5ccf;
+}
+
+.btn-success {
+    background-color: #1cc88a;
+    border-color: #1cc88a;
+}
+
+.btn-success:hover {
+    background-color: #16a673;
+    border-color: #16a673;
+}
+
+.btn-danger {
+    background-color: #e74a3b;
+    border-color: #e74a3b;
+}
+
+.btn-danger:hover {
+    background-color: #d52a1a;
+    border-color: #d52a1a;
+}
+
+/* 表单样式 */
+.form-control:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* 自定义卡片边框 */
+.border-left-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 4px solid #1cc88a !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #36b9cc !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #f6c23e !important;
+}
+
+.border-left-danger {
+    border-left: 4px solid #e74a3b !important;
+}
+
+/* 文本颜色 */
+.text-primary {
+    color: #4e73df !important;
+}
+
+.text-success {
+    color: #1cc88a !important;
+}
+
+.text-info {
+    color: #36b9cc !important;
+}
+
+.text-warning {
+    color: #f6c23e !important;
+}
+
+.text-danger {
+    color: #e74a3b !important;
+}
+
+.text-gray-300 {
+    color: #dddfeb !important;
+}
+
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+
+/* 页脚样式 */
+.footer {
+    position: relative;
+    margin-top: 50px;
+    padding: 15px 0;
+    background-color: #f8f9fc;
+    border-top: 1px solid #e3e6f0;
+}
+
+/* 登录页面样式 */
+.login-container {
+    max-width: 450px;
+    margin: 100px auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header h2 {
+    color: #4e73df;
+    font-weight: 600;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .login-container {
+        margin: 50px 20px;
+    }
+}
+
+/* DataTables 自定义样式 */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #4e73df;
+    color: white !important;
+    border-color: #4e73df;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #3a5ccf;
+    color: white !important;
+    border-color: #3a5ccf;
+} 
