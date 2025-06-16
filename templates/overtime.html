@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}加班记录 - 员工管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-clock"></i> 加班记录</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOvertimeModal">
+            <i class="fas fa-plus"></i> 添加加班记录
+        </button>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">加班记录列表</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="overtimeTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>员工姓名</th>
+                        <th>日期</th>
+                        <th>开始时间</th>
+                        <th>结束时间</th>
+                        <th>加班小时</th>
+                        <th>加班原因</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for overtime in overtimes %}
+                    <tr>
+                        <td>{{ overtime[0] }}</td>
+                        <td>{{ overtime[1] }}</td>
+                        <td>{{ overtime[2].strftime('%Y-%m-%d') if overtime[2] else '' }}</td>
+                        <td>{{ overtime[3] }}</td>
+                        <td>{{ overtime[4] }}</td>
+                        <td>{{ overtime[5] }}</td>
+                        <td>{{ overtime[6] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 添加加班模态框 -->
+<div class="modal fade" id="addOvertimeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus-circle"></i> 添加加班记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('add_overtime') }}" method="post">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="employee_id" class="form-label">员工</label>
+                            <select class="form-select" id="employee_id" name="employee_id" required>
+                                <option value="" selected disabled>选择员工</option>
+                                {% for employee in employees %}
+                                <option value="{{ employee[0] }}">{{ employee[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="date" class="form-label">日期</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="start_time" class="form-label">开始时间</label>
+                            <input type="time" class="form-control" id="start_time" name="start_time" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="end_time" class="form-label">结束时间</label>
+                            <input type="time" class="form-control" id="end_time" name="end_time" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="reason" class="form-label">加班原因</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#overtimeTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Chinese.json'
+            },
+            order: [[2, 'desc']], // 默认按日期倒序排序
+            responsive: true
+        });
+        
+        // 设置日期默认为今天
+        var today = new Date().toISOString().split('T')[0];
+        $('#date').val(today);
+        
+        // 设置时间验证
+        $('#start_time, #end_time').change(function() {
+            var start = $('#start_time').val();
+            var end = $('#end_time').val();
+            
+            if(start && end && start >= end) {
+                alert('结束时间必须晚于开始时间');
+                $(this).val('');
+            }
+        });
+    });
+</script>
+{% endblock %} 

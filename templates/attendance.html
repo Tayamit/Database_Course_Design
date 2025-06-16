@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+
+{% block title %}考勤管理 - 员工管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-calendar-check"></i> 考勤管理</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAttendanceModal">
+            <i class="fas fa-plus"></i> 添加考勤记录
+        </button>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="m-0 font-weight-bold text-primary">考勤记录</h6>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchAttendance" placeholder="搜索考勤...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="attendanceTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>员工</th>
+                        <th>日期</th>
+                        <th>签到时间</th>
+                        <th>签退时间</th>
+                        <th>加班时长(小时)</th>
+                        <th>状态</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendance in attendances %}
+                    <tr>
+                        <td>{{ attendance[0] }}</td>
+                        <td>{{ attendance[1] }}</td>
+                        <td>{{ attendance[2].strftime('%Y-%m-%d') if attendance[2] else '' }}</td>
+                        <td>{{ attendance[3].strftime('%H:%M') if attendance[3] else '' }}</td>
+                        <td>{{ attendance[4].strftime('%H:%M') if attendance[4] else '' }}</td>
+                        <td>{{ attendance[5] }}</td>
+                        <td>
+                            {% if attendance[6] == 'present' %}
+                            <span class="badge bg-success">出勤</span>
+                            {% elif attendance[6] == 'absent' %}
+                            <span class="badge bg-danger">缺勤</span>
+                            {% elif attendance[6] == 'half-day' %}
+                            <span class="badge bg-warning">半天</span>
+                            {% else %}
+                            <span class="badge bg-info">请假</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ attendance[7] }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editAttendance({{ attendance[0] }})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="confirmDeleteAttendance({{ attendance[0] }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 考勤统计 -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">考勤统计</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h5 mb-0 font-weight-bold text-success">85%</div>
+                            <div class="small text-muted">出勤率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h5 mb-0 font-weight-bold text-danger">5%</div>
+                            <div class="small text-muted">缺勤率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h5 mb-0 font-weight-bold text-info">8%</div>
+                            <div class="small text-muted">请假率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h5 mb-0 font-weight-bold text-warning">2%</div>
+                            <div class="small text-muted">迟到率</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">加班统计</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="overtimeChart"></canvas>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <div class="h5 mb-0 font-weight-bold text-primary">总加班小时数：124 小时</div>
+                    <div class="small text-muted">最近30天加班统计</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加考勤记录模态框 -->
+<div class="modal fade" id="addAttendanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus-circle"></i> 添加考勤记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('add_attendance') }}" method="post" id="addAttendanceForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label">员工</label>
+                        <select class="form-select" id="employee_id" name="employee_id" required>
+                            <option value="" selected disabled>选择员工</option>
+                            {% for employee in employees %}
+                            <option value="{{ employee[0] }}">{{ employee[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date" class="form-label">日期</label>
+                        <input type="date" class="form-control" id="date" name="date" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="check_in" class="form-label">签到时间</label>
+                            <input type="time" class="form-control" id="check_in" name="check_in">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="check_out" class="form-label">签退时间</label>
+                            <input type="time" class="form-control" id="check_out" name="check_out">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="overtime_hours" class="form-label">加班小时数</label>
+                        <input type="number" class="form-control" id="overtime_hours" name="overtime_hours" step="0.5" min="0" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">考勤状态</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="present" selected>出勤</option>
+                            <option value="absent">缺勤</option>
+                            <option value="half-day">半天</option>
+                            <option value="leave">请假</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="note" class="form-label">备注</label>
+                        <textarea class="form-control" id="note" name="note" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 确认删除模态框 -->
+<div class="modal fade" id="deleteAttendanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                确定要删除该考勤记录吗？此操作不可恢复！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <a href="#" id="confirmDeleteAttendanceBtn" class="btn btn-danger">确定删除</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#attendanceTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Chinese.json'
+            },
+            order: [[2, 'desc']]
+        });
+        
+        $('#searchAttendance').on('keyup', function() {
+            $('#attendanceTable').DataTable().search(this.value).draw();
+        });
+        
+        // 设置当前日期为默认值
+        document.getElementById('date').valueAsDate = new Date();
+        
+        // 初始化图表
+        initAttendanceChart();
+        initOvertimeChart();
+    });
+    
+    function initAttendanceChart() {
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['出勤', '缺勤', '请假', '迟到'],
+                datasets: [{
+                    data: [85, 5, 8, 2],
+                    backgroundColor: ['#1cc88a', '#e74a3b', '#36b9cc', '#f6c23e'],
+                    hoverBackgroundColor: ['#169b72', '#c1392b', '#2d9eb3', '#dda630'],
+                    hoverBorderColor: 'rgba(234, 236, 244, 1)',
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                }
+            },
+        });
+    }
+    
+    function initOvertimeChart() {
+        const ctx = document.getElementById('overtimeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['第一周', '第二周', '第三周', '第四周'],
+                datasets: [{
+                    label: '加班小时数',
+                    data: [35, 24, 40, 25],
+                    backgroundColor: '#4e73df',
+                    borderColor: '#3a5ccf',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    function confirmDeleteAttendance(id) {
+        $('#confirmDeleteAttendanceBtn').attr('href', '/attendance/delete/' + id);
+        $('#deleteAttendanceModal').modal('show');
+    }
+    
+    function editAttendance(id) {
+        // 这里可以实现编辑功能，通过Ajax获取数据并填充表单
+        alert('编辑考勤记录：' + id);
+    }
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .table th, .table td {
+        vertical-align: middle;
+    }
+    
+    .chart-area {
+        position: relative;
+        height: 20rem;
+        width: 100%;
+    }
+</style>
+{% endblock %} 

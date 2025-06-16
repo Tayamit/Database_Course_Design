@@ -152,12 +152,7 @@
 {% block scripts %}
 <script>
     $(document).ready(function() {
-        $('#employeesTable').DataTable({
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Chinese.json'
-            }
-        });
-        
+        // 员工搜索功能
         $('#searchEmployee').on('keyup', function() {
             $('#employeesTable').DataTable().search(this.value).draw();
         });
@@ -177,4 +172,4 @@
         vertical-align: middle;
     }
 </style>
-{% endblock %} 
+{% endblock %}

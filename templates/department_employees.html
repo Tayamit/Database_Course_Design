@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ department[1] }}部门员工 - 员工管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-users"></i> {{ department[1] }}部门员工</h2>
+        <p class="text-muted">{{ department[2] }}</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('departments') }}" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left"></i> 返回部门列表
+        </a>
+        <a href="{{ url_for('edit_department', id=department[0]) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> 编辑部门
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="m-0 font-weight-bold text-primary">员工列表</h6>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchDeptEmployee" placeholder="搜索员工...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if employees %}
+        <div class="table-responsive">
+            <table class="table table-bordered" id="deptEmployeesTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>姓名</th>
+                        <th>邮箱</th>
+                        <th>电话</th>
+                        <th>职位</th>
+                        <th>入职日期</th>
+                        <th>薪资</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td>{{ employee[0] }}</td>
+                        <td>{{ employee[1] }}</td>
+                        <td>{{ employee[2] }}</td>
+                        <td>{{ employee[3] }}</td>
+                        <td>{{ employee[5] }}</td>
+                        <td>{{ employee[4].strftime('%Y-%m-%d') if employee[4] else '' }}</td>
+                        <td>{{ employee[6] }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_employee', id=employee[0]) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-danger" 
+                               onclick="confirmDelete('{{ url_for('delete_employee', id=employee[0]) }}')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <h5 class="text-muted">该部门暂无员工</h5>
+            <p>您可以通过员工管理页面添加员工到此部门</p>
+            <a href="{{ url_for('employees') }}" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> 管理员工
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 部门统计 -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">部门统计</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card border-left-primary h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">员工总数</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ employees|length }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-left-success h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">平均薪资</div>
+                                {% set total_salary = namespace(value=0) %}
+                                {% for emp in employees %}
+                                {% set total_salary.value = total_salary.value + emp[6]|float %}
+                                {% endfor %}
+                                {% if employees %}
+                                {% set avg_salary = total_salary.value / employees|length %}
+                                {% else %}
+                                {% set avg_salary = 0 %}
+                                {% endif %}
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">¥{{ "%.2f"|format(avg_salary) }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-left-info h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">部门占比</div>
+                                {% if employees %}
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.1f"|format(employees|length / department_total_employees * 100) }}%</div>
+                                {% else %}
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">0%</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-left-warning h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">最高薪资</div>
+                                {% set max_salary = namespace(value=0) %}
+                                {% for emp in employees %}
+                                {% if emp[6]|float > max_salary.value %}
+                                {% set max_salary.value = emp[6]|float %}
+                                {% endif %}
+                                {% endfor %}
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">¥{{ "%.2f"|format(max_salary.value) }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-trophy fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认删除模态框 -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                确定要删除该员工吗？此操作不可恢复！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">确定删除</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#deptEmployeesTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Chinese.json'
+            }
+        });
+        
+        $('#searchDeptEmployee').on('keyup', function() {
+            $('#deptEmployeesTable').DataTable().search(this.value).draw();
+        });
+    });
+    
+    function confirmDelete(url) {
+        $('#confirmDeleteBtn').attr('href', url);
+        $('#deleteConfirmModal').modal('show');
+        return false;
+    }
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .table th, .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %} 

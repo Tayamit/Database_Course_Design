@@ -1,23 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}仪表盘 - 员工管理系统{% endblock %}
+{% block title %}首页 - 员工管理系统{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-12">
-        <h2><i class="fas fa-tachometer-alt"></i> 仪表盘</h2>
-        <hr>
-    </div>
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">仪表盘</h1>
 </div>
 
-<!-- 统计卡片 -->
-<div class="row mb-4">
-    <div class="col-md-4">
+<!-- Content Row -->
+<div class="row">
+
+    <!-- 员工总数 -->
+    <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-primary shadow h-100 py-2">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">员工总数</div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            员工总数</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ employee_count }}</div>
                     </div>
                     <div class="col-auto">
@@ -28,12 +29,14 @@
         </div>
     </div>
 
-    <div class="col-md-4">
+    <!-- 部门总数 -->
+    <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-success shadow h-100 py-2">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">部门数量</div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            部门总数</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ department_count }}</div>
                     </div>
                     <div class="col-auto">
@@ -44,19 +47,23 @@
         </div>
     </div>
 
-    <div class="col-md-4">
+    <!-- 出勤率 -->
+    <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-info shadow h-100 py-2">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">出勤率</div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">今日出勤率
+                        </div>
                         <div class="row no-gutters align-items-center">
                             <div class="col-auto">
-                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">85%</div>
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ "%.1f"|format(attendance_rate) }}%</div>
                             </div>
                             <div class="col">
                                 <div class="progress progress-sm mr-2">
-                                    <div class="progress-bar bg-info" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="progress-bar bg-info" role="progressbar"
+                                        style="width: {{ attendance_rate }}%" aria-valuenow="{{ attendance_rate }}" aria-valuemin="0"
+                                        aria-valuemax="100"></div>
                                 </div>
                             </div>
                         </div>
@@ -68,152 +75,135 @@
             </div>
         </div>
     </div>
+
+    <!-- 加班时长 -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            今日加班总时长</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.1f"|format(overtime_hours|float) }} 小时</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- 最近添加的员工 -->
-<div class="row mb-4">
-    <div class="col-md-6">
+<!-- Content Row -->
+<div class="row">
+
+    <!-- 出勤统计 -->
+    <div class="col-lg-6 mb-4">
         <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">今日出勤统计</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie mb-4">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 mb-3 text-center">
+                        <span class="badge bg-success p-2 w-100">出勤: {{ present_count }}</span>
+                    </div>
+                    <div class="col-md-3 mb-3 text-center">
+                        <span class="badge bg-danger p-2 w-100">缺勤: {{ absent_count }}</span>
+                    </div>
+                    <div class="col-md-3 mb-3 text-center">
+                        <span class="badge bg-info p-2 w-100">请假: {{ leave_count }}</span>
+                    </div>
+                    <div class="col-md-3 mb-3 text-center">
+                        <span class="badge bg-warning p-2 w-100">半天: {{ half_day_count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近添加的员工 -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
                 <h6 class="m-0 font-weight-bold text-primary">最近添加的员工</h6>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>姓名</th>
-                                <th>部门</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for employee in recent_employees %}
-                            <tr>
-                                <td>{{ employee[0] }}</td>
-                                <td>{{ employee[1] }}</td>
-                                <td>{{ employee[2] }}</td>
-                                <td>
-                                    <a href="{{ url_for('edit_employee', id=employee[0]) }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 公告栏 -->
-    <div class="col-md-6">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">公告栏</h6>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <div class="card border-left-primary py-2 px-3 mb-2">
-                        <div class="card-body p-2">
-                            <div class="small text-primary mb-1">2023-08-01</div>
-                            <div>关于中秋节放假安排的通知</div>
-                        </div>
-                    </div>
-                    <div class="card border-left-primary py-2 px-3 mb-2">
-                        <div class="card-body p-2">
-                            <div class="small text-primary mb-1">2023-07-25</div>
-                            <div>公司年中总结会议通知</div>
-                        </div>
-                    </div>
-                    <div class="card border-left-primary py-2 px-3 mb-2">
-                        <div class="card-body p-2">
-                            <div class="small text-primary mb-1">2023-07-15</div>
-                            <div>新版员工手册发布通知</div>
-                        </div>
-                    </div>
-                </div>
-                {% if session.role == 'admin' or session.role == 'manager' %}
-                <div class="text-center">
-                    <button class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus"></i> 添加公告
-                    </button>
-                </div>
-                {% endif %}
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>部门</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in recent_employees %}
+                        <tr>
+                            <td>{{ employee[1] }}</td>
+                            <td>{{ employee[2] }}</td>
+                            <td>
+                                <a href="{{ url_for('edit_employee', id=employee[0]) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- 系统信息 -->
-<div class="row">
-    <div class="col-md-12">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">系统信息</h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <p><strong>系统版本：</strong> v1.0.0</p>
-                        <p><strong>更新时间：</strong> 2023-08-01</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p><strong>数据库状态：</strong> <span class="text-success">正常</span></p>
-                        <p><strong>数据库版本：</strong> SQL Server 2019</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p><strong>当前用户：</strong> {{ session.username }}</p>
-                        <p><strong>用户角色：</strong> {{ session.role }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/chart.js/Chart.min.js') }}"></script>
+<script>
+    // 出勤统计图表
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById("attendanceChart").getContext('2d');
+        var myPieChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ["出勤", "缺勤", "请假", "半天"],
+                datasets: [{
+                    data: [{{ present_count }}, {{ absent_count }}, {{ leave_count }}, {{ half_day_count }}],
+                    backgroundColor: ['#1cc88a', '#e74a3b', '#36b9cc', '#f6c23e'],
+                    hoverBackgroundColor: ['#17a673', '#be2617', '#258391', '#dda20a'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)"
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10
+                },
+                legend: {
+                    display: false
+                },
+                cutoutPercentage: 80
+            }
+        });
+    });
+</script>
 {% endblock %}
 
 {% block styles %}
 <style>
-    .border-left-primary {
-        border-left: 4px solid #4e73df !important;
-    }
-    .border-left-success {
-        border-left: 4px solid #1cc88a !important;
-    }
-    .border-left-info {
-        border-left: 4px solid #36b9cc !important;
-    }
-    .border-left-warning {
-        border-left: 4px solid #f6c23e !important;
-    }
-    .text-primary {
-        color: #4e73df !important;
-    }
-    .text-success {
-        color: #1cc88a !important;
-    }
-    .text-info {
-        color: #36b9cc !important;
-    }
-    .text-gray-300 {
-        color: #dddfeb !important;
-    }
-    .text-gray-800 {
-        color: #5a5c69 !important;
-    }
-    .card-header {
-        background-color: #f8f9fc !important;
+    .badge {
+        font-size: 0.8rem;
     }
 </style>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    $(document).ready(function() {
-        console.log('Dashboard loaded');
-    });
-</script>
 {% endblock %} 

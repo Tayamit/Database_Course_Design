@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}请假记录 - 员工管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-calendar-minus"></i> 请假记录</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLeaveModal">
+            <i class="fas fa-plus"></i> 申请请假
+        </button>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">请假记录列表</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="leavesTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>员工姓名</th>
+                        <th>请假类型</th>
+                        <th>开始日期</th>
+                        <th>结束日期</th>
+                        <th>天数</th>
+                        <th>请假原因</th>
+                        <th>申请时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td>{{ leave[0] }}</td>
+                        <td>{{ leave[1] }}</td>
+                        <td>
+                            {% if leave[5] == 'sick' %}
+                                <span class="badge bg-danger">病假</span>
+                            {% elif leave[5] == 'casual' %}
+                                <span class="badge bg-info">事假</span>
+                            {% elif leave[5] == 'annual' %}
+                                <span class="badge bg-success">年假</span>
+                            {% elif leave[5] == 'maternity' %}
+                                <span class="badge bg-warning">产假</span>
+                            {% else %}
+                                <span class="badge bg-secondary">其它</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ leave[2].strftime('%Y-%m-%d') if leave[2] else '' }}</td>
+                        <td>{{ leave[3].strftime('%Y-%m-%d') if leave[3] else '' }}</td>
+                        <td>{{ leave[4] }}</td>
+                        <td>{{ leave[6] }}</td>
+                        <td>{{ leave[7].strftime('%Y-%m-%d %H:%M') if leave[7] else '' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 添加请假模态框 -->
+<div class="modal fade" id="addLeaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-calendar-plus"></i> 申请请假</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('add_leave') }}" method="post">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="employee_id" class="form-label">员工</label>
+                            <select class="form-select" id="employee_id" name="employee_id" required>
+                                <option value="" selected disabled>选择员工</option>
+                                {% for employee in employees %}
+                                <option value="{{ employee[0] }}">{{ employee[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="leave_type" class="form-label">请假类型</label>
+                            <select class="form-select" id="leave_type" name="leave_type" required>
+                                <option value="" selected disabled>选择类型</option>
+                                <option value="sick">病假</option>
+                                <option value="casual">事假</option>
+                                <option value="annual">年假</option>
+                                <option value="maternity">产假</option>
+                                <option value="others">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="start_date" class="form-label">开始日期</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="end_date" class="form-label">结束日期</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="reason" class="form-label">请假原因</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">提交申请</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // 初始化请假记录表格
+        let leavesTable = $('#leavesTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Chinese.json'
+            },
+            order: [[7, 'desc']], // 默认按申请时间倒序排序
+            responsive: true
+        });
+        
+        // 日期验证
+        $('#start_date').change(function() {
+            let startDate = $(this).val();
+            $('#end_date').attr('min', startDate);
+            
+            if($('#end_date').val() && $('#end_date').val() < startDate) {
+                $('#end_date').val(startDate);
+            }
+        });
+        
+        // 设置日期默认为今天
+        var today = new Date().toISOString().split('T')[0];
+        $('#start_date').val(today);
+        $('#end_date').val(today);
+    });
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .badge {
+        font-size: 0.8rem;
+        padding: 0.35em 0.65em;
+    }
+</style>
+{% endblock %} 
