@@ -42,17 +42,6 @@
                             <li><a class="dropdown-item" href="{{ url_for('overtime') }}"><i class="fas fa-clock"></i> 加班记录</a></li>
                         </ul>
                     </li>
-                    {% if session.role == 'admin' %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="reportDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-chart-bar"></i> 报表
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">员工统计</a></li>
-                            <li><a class="dropdown-item" href="#">部门统计</a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">

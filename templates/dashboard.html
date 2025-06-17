@@ -5,7 +5,7 @@
 {% block content %}
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">仪表盘</h1>
+    <h1 class="h3 mb-0 text-gray-800">信息概览</h1>
 </div>
 
 <!-- Content Row -->
@@ -97,64 +97,44 @@
 
 <!-- Content Row -->
 <div class="row">
-
-    <!-- 出勤统计 -->
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">今日出勤统计</h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-pie mb-4">
-                    <canvas id="attendanceChart"></canvas>
-                </div>
-                <div class="row">
-                    <div class="col-md-3 mb-3 text-center">
-                        出勤: {{ present_count }}
-                    </div>
-                    <div class="col-md-3 mb-3 text-center">
-                        缺勤: {{ absent_count }}
-                    </div>
-                    <div class="col-md-3 mb-3 text-center">
-                        请假: {{ leave_count }}
-                    </div>
-                    <div class="col-md-3 mb-3 text-center">
-                        半天: {{ half_day_count }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- 最近添加的员工 -->
-    <div class="col-lg-6 mb-4">
+    <div class="col-xl-12 col-lg-12 mb-4">
         <div class="card shadow mb-4">
-            <div class="card-header py-3">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">最近添加的员工</h6>
+                <a href="{{ url_for('employees') }}" class="btn btn-sm btn-primary shadow-sm">
+                    <i class="fas fa-list fa-sm text-white-50"></i> 查看全部
+                </a>
             </div>
             <div class="card-body">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>姓名</th>
-                            <th>部门</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for employee in recent_employees %}
-                        <tr>
-                            <td>{{ employee[1] }}</td>
-                            <td>{{ employee[2] }}</td>
-                            <td>
-                                <a href="{{ url_for('edit_employee', id=employee[0]) }}" class="btn btn-sm btn-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>部门</th>
+                                <th>职位</th>
+                                <th>入职日期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in recent_employees %}
+                            <tr>
+                                <td>{{ employee[1] }}</td>
+                                <td><span class="badge badge-light">{{ employee[2] }}</span></td>
+                                <td>{{ employee[3] if employee|length > 3 else '未知' }}</td>
+                                <td>{{ employee[4].strftime('%Y-%m-%d') if employee|length > 4 and employee[4] else '未知' }}</td>
+                                <td>
+                                    <a href="{{ url_for('edit_employee', id=employee[0]) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> 查看
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -163,47 +143,41 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='vendor/chart.js/Chart.min.js') }}"></script>
-<script>
-    // 出勤统计图表
-    document.addEventListener('DOMContentLoaded', function() {
-        var ctx = document.getElementById("attendanceChart").getContext('2d');
-        var myPieChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ["出勤", "缺勤", "请假", "半天"],
-                datasets: [{
-                    data: [{{ present_count }}, {{ absent_count }}, {{ leave_count }}, {{ half_day_count }}],
-                    backgroundColor: ['#1cc88a', '#e74a3b', '#36b9cc', '#f6c23e'],
-                    hoverBackgroundColor: ['#17a673', '#be2617', '#258391', '#dda20a'],
-                    hoverBorderColor: "rgba(234, 236, 244, 1)"
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                tooltips: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyFontColor: "#858796",
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    caretPadding: 10
-                },
-                legend: {
-                    display: false
-                },
-                cutoutPercentage: 80
-            }
-        });
-    });
-</script>
 {% endblock %}
 
 {% block styles %}
 <style>
     .badge {
         font-size: 0.8rem;
+    }
+    .card {
+        transition: transform 0.2s;
+        background-color: #ffffff;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .table-responsive {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .progress {
+        height: 0.5rem;
+    }
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    .text-gray-800 {
+        color: #2e3a4e !important;
+    }
+    .table {
+        color: #3a3b45;
+    }
+    .badge-light {
+        background-color: #eaecf4;
+        color: #3a3b45;
     }
 </style>
 {% endblock %} 

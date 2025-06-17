@@ -4,110 +4,231 @@
 
 {% block styles %}
 <style>
-    .login-page {
+    body {
+        background: #f5f7fa;
+        min-height: 100vh;
+    }
+    
+    .login-container {
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #3498db, #1abc9c);
+        padding: 2rem 1rem;
     }
     
-    .login-card {
+    .login-wrapper {
         width: 100%;
-        max-width: 450px;
-        border-radius: 15px;
+        max-width: 1200px;
+        display: flex;
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+    
+    .login-banner {
+        flex: 1.8;
+        background: linear-gradient(135deg, #1e88e5, #42a5f5);
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        display: none;
+    }
+    
+    .login-banner-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        padding: 3rem;
+        width: 100%;
+    }
+    
+    .login-banner h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .login-banner p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .banner-image {
+        max-width: 85%;
+        margin-top: 2rem;
+    }
+    
+    .login-form {
+        flex: 1;
+        padding: 3rem 4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 400px;
+    }
+    
+    .login-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2.5rem;
+    }
+    
+    .login-tab {
+        padding: 0.5rem 1.5rem;
+        margin: 0 0.5rem;
+        font-weight: 500;
+        color: #666;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s;
+    }
+    
+    .login-tab.active {
+        color: #1e88e5;
+        border-bottom-color: #1e88e5;
+    }
+    
+    .login-tab i {
+        margin-right: 0.5rem;
     }
     
     .login-header {
-        background-color: #fff;
-        padding: 30px 40px 0;
         text-align: center;
-    }
-    
-    .login-header h2 {
-        color: #333;
-        font-weight: 700;
-        margin-bottom: 5px;
-    }
-    
-    .login-header p {
-        color: #777;
-        margin-bottom: 0;
+        margin-bottom: 2.5rem;
     }
     
     .login-logo {
         font-size: 3rem;
-        color: #3498db;
-        margin-bottom: 20px;
+        color: #1e88e5;
+        margin-bottom: 1rem;
     }
     
-    .login-body {
-        background-color: #fff;
-        padding: 30px 40px 40px;
+    .login-header h2 {
+        color: #333;
+        font-weight: 600;
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
     }
     
-    .form-floating {
-        margin-bottom: 20px;
+    .form-group {
+        margin-bottom: 1.8rem;
+        position: relative;
     }
     
-    .form-floating .form-control {
-        border-radius: 8px;
-        height: 56px;
-        border: 1px solid #ced4da;
+    .form-control {
+        height: 54px;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+        padding: 0.75rem 1rem;
+        width: 100%;
+        font-size: 1.05rem;
+        transition: all 0.3s;
     }
     
-    .form-floating .form-control:focus {
-        border-color: #3498db;
-        box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+    .form-control:focus {
+        border-color: #1e88e5;
+        box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+        outline: none;
+    }
+    
+    .form-control-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #757575;
+    }
+    
+    .icon-input {
+        padding-left: 2.5rem;
+    }
+    
+    .toggle-password {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #757575;
     }
     
     .form-check {
-        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.8rem;
+    }
+    
+    .form-check-input {
+        margin-right: 0.5rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: #1e88e5;
+        border-color: #1e88e5;
+    }
+    
+    .form-check-label {
+        color: #666;
+        font-size: 1rem;
     }
     
     .login-btn {
-        height: 50px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 16px;
-        margin-top: 10px;
-        background-color: #3498db;
+        height: 54px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 1.1rem;
+        background-color: #1e88e5;
         border: none;
         transition: all 0.3s ease;
     }
     
     .login-btn:hover {
-        background-color: #2980b9;
+        background-color: #1976d2;
         transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
     }
     
     .login-footer {
         text-align: center;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-        margin-top: 20px;
-    }
-
-    .form-floating > label {
-        padding: 1rem 0.75rem;
+        margin-top: 2rem;
     }
     
-    .animated {
-        animation: fadeIn 0.8s;
+    .login-footer a {
+        color: #1e88e5;
+        text-decoration: none;
+        font-size: 0.9rem;
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+    .login-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    .copyright {
+        color: #999;
+        font-size: 0.9rem;
+        margin-top: 2rem;
+        text-align: center;
     }
     
     .error-msg {
-        padding: 10px;
-        border-radius: 5px;
-        margin-bottom: 20px;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
         animation: shake 0.5s;
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+    
+    .error-msg i {
+        margin-right: 0.5rem;
     }
     
     @keyframes shake {
@@ -118,61 +239,106 @@
         80% { transform: translateX(10px); }
         100% { transform: translateX(0); }
     }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animated {
+        animation: fadeIn 0.5s;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 576px) {
+        .login-form {
+            padding: 2rem;
+            min-width: auto;
+        }
+    }
+    
+    @media (min-width: 768px) and (max-width: 991px) {
+        .login-form {
+            min-width: 450px;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .login-banner {
+            display: flex;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="login-page">
+<div class="login-container">
     <div class="container">
-        <div class="login-card animated">
-            <div class="login-header">
-                <div class="login-logo">
-                    <i class="fas fa-users-cog"></i>
+        <div class="login-wrapper animated">
+            <div class="login-banner">
+                <div class="login-banner-content">
+                    <h1>员工管理系统</h1>
+                    <p>高效管理 · 数据驱动</p>
+                    <img src="{{ url_for('static', filename='img/banner.svg') }}" alt="智慧办公" class="banner-image" onerror="this.style.display='none'">
                 </div>
-                <h2>员工管理系统</h2>
-                <p class="text-muted">使用您的账户登录管理平台</p>
             </div>
             
-            <div class="login-body">
+            <div class="login-form">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h2>员工管理系统</h2>
+                </div>
+                
+                <div class="login-tabs">
+                    <div class="login-tab active">
+                        <i class="fas fa-user"></i>账号登录
+                    </div>
+                </div>
+                
                 {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
                     <div class="alert alert-{{ category }} error-msg" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i> {{ message }}
+                        <i class="fas fa-exclamation-circle"></i> {{ message }}
                     </div>
                     {% endfor %}
                 {% endif %}
                 {% endwith %}
-            
-                <form method="post" action="{{ url_for('login') }}">
-                    <div class="form-floating">
-                        <input type="text" class="form-control" id="username" name="username" placeholder="用户名" required>
-                        <label for="username"><i class="fas fa-user me-2"></i>用户名</label>
+                
+                <form method="post" action="{{ url_for('login') }}" id="loginForm">
+                    <div class="form-group">
+                        <i class="fas fa-user form-control-icon"></i>
+                        <input type="text" class="form-control icon-input" id="username" name="username" placeholder="用户名" required>
                     </div>
                     
-                    <div class="form-floating">
-                        <input type="password" class="form-control" id="password" name="password" placeholder="密码" required>
-                        <label for="password"><i class="fas fa-lock me-2"></i>密码</label>
+                    <div class="form-group">
+                        <i class="fas fa-lock form-control-icon"></i>
+                        <input type="password" class="form-control icon-input" id="password" name="password" placeholder="密码" required>
+                        <span class="toggle-password" toggle="#password">
+                            <i class="fas fa-eye"></i>
+                        </span>
                     </div>
                     
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                        <label class="form-check-label" for="remember">记住我的登录状态</label>
+                        <label class="form-check-label" for="remember">记住登录状态</label>
                     </div>
                     
                     <button type="submit" class="btn btn-primary login-btn w-100">
-                        <i class="fas fa-sign-in-alt me-2"></i> 登录系统
+                        登录
                     </button>
                 </form>
                 
                 <div class="login-footer">
-                    <p class="text-muted mb-0">测试账号：admin / admin123</p>
+                    <small class="text-muted">测试账号：admin / admin123</small>
                 </div>
             </div>
         </div>
         
-        <div class="text-center text-white mt-4">
-            <p>&copy; {{ now.year }} 员工管理系统 | 版权所有</p>
+        <div class="copyright">
+            <p>&copy; {{ now.year }} 员工管理系统</p>
         </div>
     </div>
 </div>
@@ -185,26 +351,44 @@
         $('#username').focus();
         
         // 表单验证
-        $('form').on('submit', function(e) {
+        $('#loginForm').on('submit', function(e) {
             const username = $('#username').val().trim();
             const password = $('#password').val().trim();
             
             if (!username || !password) {
                 e.preventDefault();
-                alert('请输入用户名和密码');
+                
+                if (!username) {
+                    $('#username').addClass('is-invalid').focus();
+                } else {
+                    $('#password').addClass('is-invalid').focus();
+                }
+                
+                // 添加一个错误提示
+                if ($('.error-msg').length === 0) {
+                    $('<div class="alert alert-danger error-msg" role="alert"><i class="fas fa-exclamation-circle"></i> 请输入用户名和密码</div>').insertBefore('#loginForm');
+                }
+                
                 return false;
             }
+        });
+        
+        // 输入框获得焦点时移除错误状态
+        $('.form-control').on('focus', function() {
+            $(this).removeClass('is-invalid');
         });
         
         // 密码显示切换
         $('.toggle-password').click(function() {
             const input = $($(this).attr('toggle'));
-            if (input.attr('type') == 'password') {
+            const icon = $(this).find('i');
+            
+            if (input.attr('type') === 'password') {
                 input.attr('type', 'text');
-                $(this).removeClass('fa-eye').addClass('fa-eye-slash');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
             } else {
                 input.attr('type', 'password');
-                $(this).removeClass('fa-eye-slash').addClass('fa-eye');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
             }
         });
     });

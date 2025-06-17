@@ -89,35 +89,119 @@
         <div class="card shadow mb-4">
             <div class="card-header py-3">
                 <h6 class="m-0 font-weight-bold text-primary">考勤统计</h6>
+                <ul class="nav nav-tabs mt-2" id="attendanceStatsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily" type="button" role="tab" aria-controls="daily" aria-selected="true">日统计</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly" type="button" role="tab" aria-controls="weekly" aria-selected="false">周统计</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly" type="button" role="tab" aria-controls="monthly" aria-selected="false">月统计</button>
+                    </li>
+                </ul>
             </div>
             <div class="card-body">
-                <div class="chart-area">
-                    <canvas id="attendanceChart"></canvas>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <div class="h5 mb-0 font-weight-bold text-success">85%</div>
-                            <div class="small text-muted">出勤率</div>
+                <div class="tab-content" id="attendanceStatsContent">
+                    <!-- 日统计 -->
+                    <div class="tab-pane fade show active" id="daily" role="tabpanel" aria-labelledby="daily-tab">
+                        <div class="chart-area">
+                            <canvas id="dailyAttendanceChart"></canvas>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-success">{{ attendance_stats.attendance_rate }}%</div>
+                                    <div class="small text-muted">出勤率</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-danger">{{ attendance_stats.absent_rate }}%</div>
+                                    <div class="small text-muted">缺勤率</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-info">{{ attendance_stats.leave_rate }}%</div>
+                                    <div class="small text-muted">请假率</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-warning">{{ attendance_stats.half_day_rate }}%</div>
+                                    <div class="small text-muted">半天率</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <div class="h5 mb-0 font-weight-bold text-danger">5%</div>
-                            <div class="small text-muted">缺勤率</div>
+                    
+                    <!-- 周统计 -->
+                    <div class="tab-pane fade" id="weekly" role="tabpanel" aria-labelledby="weekly-tab">
+                        <div class="chart-area">
+                            <canvas id="weeklyAttendanceChart"></canvas>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-success">{{ weekly_stats.attendance_rate }}%</div>
+                                    <div class="small text-muted">出勤率</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-danger">{{ weekly_stats.absent_rate }}%</div>
+                                    <div class="small text-muted">缺勤率</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-info">{{ weekly_stats.leave_rate }}%</div>
+                                    <div class="small text-muted">请假率</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-warning">{{ weekly_stats.half_day_rate }}%</div>
+                                    <div class="small text-muted">半天率</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <div class="h5 mb-0 font-weight-bold text-info">8%</div>
-                            <div class="small text-muted">请假率</div>
+                    
+                    <!-- 月统计 -->
+                    <div class="tab-pane fade" id="monthly" role="tabpanel" aria-labelledby="monthly-tab">
+                        <div class="chart-area">
+                            <canvas id="monthlyAttendanceChart"></canvas>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <div class="h5 mb-0 font-weight-bold text-warning">2%</div>
-                            <div class="small text-muted">迟到率</div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-success">{{ monthly_stats.attendance_rate }}%</div>
+                                    <div class="small text-muted">出勤率</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-danger">{{ monthly_stats.absent_rate }}%</div>
+                                    <div class="small text-muted">缺勤率</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-info">{{ monthly_stats.leave_rate }}%</div>
+                                    <div class="small text-muted">请假率</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0 font-weight-bold text-warning">{{ monthly_stats.half_day_rate }}%</div>
+                                    <div class="small text-muted">半天率</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -135,7 +219,7 @@
                 </div>
                 <hr>
                 <div class="text-center">
-                    <div class="h5 mb-0 font-weight-bold text-primary">总加班小时数：124 小时</div>
+                    <div class="h5 mb-0 font-weight-bold text-primary">总加班小时数：{{ overtime_stats.total_hours }} 小时</div>
                     <div class="small text-muted">最近30天加班统计</div>
                 </div>
             </div>
@@ -303,22 +387,40 @@
         document.getElementById('date').valueAsDate = new Date();
         
         // 初始化图表
-        initAttendanceChart();
+        initDailyAttendanceChart();
+        initWeeklyAttendanceChart();
+        initMonthlyAttendanceChart();
         initOvertimeChart();
+        
+        // 切换标签页时重新渲染图表
+        $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+            if (e.target.id === 'daily-tab') {
+                initDailyAttendanceChart();
+            } else if (e.target.id === 'weekly-tab') {
+                initWeeklyAttendanceChart();
+            } else if (e.target.id === 'monthly-tab') {
+                initMonthlyAttendanceChart();
+            }
+        });
     });
     
-    function initAttendanceChart() {
-        const ctx = document.getElementById('attendanceChart').getContext('2d');
+    function initDailyAttendanceChart() {
+        const ctx = document.getElementById('dailyAttendanceChart').getContext('2d');
         new Chart(ctx, {
             type: 'pie',
             data: {
-                labels: ['出勤', '缺勤', '请假', '迟到'],
+                labels: ['出勤', '缺勤', '请假', '半天'],
                 datasets: [{
-                    data: [85, 5, 8, 2],
+                    data: [
+                        {{ attendance_stats.present_count }}, 
+                        {{ attendance_stats.absent_count }}, 
+                        {{ attendance_stats.leave_count }}, 
+                        {{ attendance_stats.half_day_count }}
+                    ],
                     backgroundColor: ['#1cc88a', '#e74a3b', '#36b9cc', '#f6c23e'],
                     hoverBackgroundColor: ['#169b72', '#c1392b', '#2d9eb3', '#dda630'],
-                    hoverBorderColor: 'rgba(234, 236, 244, 1)',
-                }],
+                    hoverBorderColor: 'rgba(234, 236, 244, 1)'
+                }]
             },
             options: {
                 maintainAspectRatio: false,
@@ -329,9 +431,87 @@
                             usePointStyle: true,
                             padding: 20
                         }
+                    },
+                    title: {
+                        display: true,
+                        text: '今日考勤统计'
                     }
                 }
+            }
+        });
+    }
+    
+    function initWeeklyAttendanceChart() {
+        const ctx = document.getElementById('weeklyAttendanceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['出勤', '缺勤', '请假', '半天'],
+                datasets: [{
+                    data: [
+                        {{ weekly_stats.present_count }}, 
+                        {{ weekly_stats.absent_count }}, 
+                        {{ weekly_stats.leave_count }}, 
+                        {{ weekly_stats.half_day_count }}
+                    ],
+                    backgroundColor: ['#1cc88a', '#e74a3b', '#36b9cc', '#f6c23e'],
+                    hoverBackgroundColor: ['#169b72', '#c1392b', '#2d9eb3', '#dda630'],
+                    hoverBorderColor: 'rgba(234, 236, 244, 1)'
+                }]
             },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '本周考勤统计'
+                    }
+                }
+            }
+        });
+    }
+    
+    function initMonthlyAttendanceChart() {
+        const ctx = document.getElementById('monthlyAttendanceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['出勤', '缺勤', '请假', '半天'],
+                datasets: [{
+                    data: [
+                        {{ monthly_stats.present_count }}, 
+                        {{ monthly_stats.absent_count }}, 
+                        {{ monthly_stats.leave_count }}, 
+                        {{ monthly_stats.half_day_count }}
+                    ],
+                    backgroundColor: ['#1cc88a', '#e74a3b', '#36b9cc', '#f6c23e'],
+                    hoverBackgroundColor: ['#169b72', '#c1392b', '#2d9eb3', '#dda630'],
+                    hoverBorderColor: 'rgba(234, 236, 244, 1)'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '本月考勤统计'
+                    }
+                }
+            }
         });
     }
     
@@ -340,10 +520,10 @@
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['第一周', '第二周', '第三周', '第四周'],
+                labels: {{ overtime_stats.weeks|tojson }},
                 datasets: [{
                     label: '加班小时数',
-                    data: [35, 24, 40, 25],
+                    data: {{ overtime_stats.hours|tojson }},
                     backgroundColor: '#4e73df',
                     borderColor: '#3a5ccf',
                     borderWidth: 1

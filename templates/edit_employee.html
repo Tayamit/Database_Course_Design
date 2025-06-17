@@ -67,37 +67,66 @@
 
 <!-- 员工详情卡片 -->
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <div class="card shadow mb-4">
-            <div class="card-header py-3">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">考勤信息</h6>
+                <a href="{{ url_for('attendance') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-calendar-check"></i> 查看全部考勤
+                </a>
             </div>
             <div class="card-body">
-                <p>考勤率: <strong>92%</strong></p>
-                <div class="progress mb-4">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: 92%" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <p>本月出勤: <strong>21</strong> 天</p>
-                <p>本月请假: <strong>1</strong> 天</p>
-                <p>本月缺勤: <strong>0</strong> 天</p>
-                <div class="text-end">
-                    <button class="btn btn-sm btn-info">查看详细考勤记录</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">薪资信息</h6>
-            </div>
-            <div class="card-body">
-                <p>基本工资: <strong>￥{{ employee[6] }}</strong></p>
-                <p>绩效奖金: <strong>￥2000</strong></p>
-                <p>五险一金: <strong>￥1500</strong></p>
-                <p>实发工资: <strong>￥{{ employee[6] + 2000 - 1500 }}</strong></p>
-                <div class="text-end">
-                    <button class="btn btn-sm btn-info">查看薪资历史</button>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p>本月考勤率:</p>
+                        <div class="h4 mb-3 font-weight-bold text-primary">{{ attendance_rate }}%</div>
+                        <div class="progress mb-4">
+                            <div class="progress-bar bg-{{ 'success' if attendance_rate >= 90 else 'warning' if attendance_rate >= 75 else 'danger' }}" 
+                                role="progressbar" style="width: {{ attendance_rate }}%" 
+                                aria-valuenow="{{ attendance_rate }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="card border-left-success h-100 py-2">
+                                    <div class="card-body py-2">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">出勤</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ present_days }} 天</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="card border-left-info h-100 py-2">
+                                    <div class="card-body py-2">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">请假</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ leave_days }} 天</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="card border-left-danger h-100 py-2">
+                                    <div class="card-body py-2">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col">
+                                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">缺勤</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ absent_days }} 天</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -109,6 +138,12 @@
 <style>
     .form-label {
         font-weight: 500;
+    }
+    .text-gray-800 {
+        color: #2e3a4e !important;
+    }
+    .card {
+        background-color: #ffffff;
     }
 </style>
 {% endblock %} 

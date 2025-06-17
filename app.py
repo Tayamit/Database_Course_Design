@@ -3,6 +3,7 @@ import pyodbc
 import os
 from datetime import datetime, timedelta
 from functools import wraps
+import calendar
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -96,10 +97,9 @@ def dashboard():
     # 获取当天日期
     today = datetime.now().strftime('%Y-%m-%d')
     
-    # 获取当天出勤率
+    # 获取当天出勤数据
     cursor.execute("""
         SELECT 
-            COUNT(CASE WHEN status = 'present' THEN 1 END) * 100.0 / COUNT(*) AS attendance_rate,
             COUNT(CASE WHEN status = 'present' THEN 1 END) AS present_count,
             COUNT(CASE WHEN status = 'absent' THEN 1 END) AS absent_count,
             COUNT(CASE WHEN status = 'leave' THEN 1 END) AS leave_count,
@@ -110,21 +110,70 @@ def dashboard():
     """, today)
     
     attendance_stats = cursor.fetchone()
-    attendance_rate = attendance_stats[0] if attendance_stats[0] else 0
-    present_count = attendance_stats[1] if attendance_stats[1] else 0
-    absent_count = attendance_stats[2] if attendance_stats[2] else 0
-    leave_count = attendance_stats[3] if attendance_stats[3] else 0
-    half_day_count = attendance_stats[4] if attendance_stats[4] else 0
-    overtime_hours = attendance_stats[5] if attendance_stats[5] else 0
+    present_count = attendance_stats[0] if attendance_stats[0] else 0
+    absent_count = attendance_stats[1] if attendance_stats[1] else 0
+    leave_count = attendance_stats[2] if attendance_stats[2] else 0
+    half_day_count = attendance_stats[3] if attendance_stats[3] else 0
+    overtime_hours = attendance_stats[4] if attendance_stats[4] else 0
+    
+    # 使用员工总数作为分母计算出勤率
+    attendance_rate = (present_count * 100.0 / employee_count) if employee_count > 0 else 0
     
     # 获取最近添加的员工
     cursor.execute("""
-        SELECT TOP 5 e.id, e.name, d.name as department
+        SELECT TOP 10 e.id, e.name, d.name as department, e.position, e.hire_date
         FROM employees e
         JOIN departments d ON e.department_id = d.id
         ORDER BY e.hire_date DESC
     """)
     recent_employees = cursor.fetchall()
+    
+    # 获取部门人员分布数据
+    cursor.execute("""
+        SELECT d.name, COUNT(e.id) as employee_count
+        FROM departments d
+        LEFT JOIN employees e ON d.id = e.department_id
+        GROUP BY d.name
+        ORDER BY employee_count DESC
+    """)
+    department_distribution = cursor.fetchall()
+    
+    # 获取本周出勤情况数据
+    # 计算本周的开始日期和结束日期
+    today_date = datetime.now()
+    start_of_week = (today_date - timedelta(days=today_date.weekday())).strftime('%Y-%m-%d')
+    end_of_week = (today_date + timedelta(days=6-today_date.weekday())).strftime('%Y-%m-%d')
+    
+    # 获取本周每天的出勤数据
+    week_days = []
+    week_attendance = []
+    current_date = today_date - timedelta(days=today_date.weekday())  # 本周一
+    
+    # 星期几的中文映射
+    weekday_map = {
+        0: "周一",
+        1: "周二",
+        2: "周三",
+        3: "周四",
+        4: "周五",
+        5: "周六",
+        6: "周日"
+    }
+    
+    for i in range(5):  # 本周一到周五
+        if current_date <= today_date:  # 只计算到今天
+            day_str = current_date.strftime('%Y-%m-%d')
+            week_days.append(weekday_map[current_date.weekday()])  # 中文星期几
+            
+            # 查询当天出勤人数
+            cursor.execute("""
+                SELECT COUNT(*) FROM attendance 
+                WHERE date = ? AND status = 'present'
+            """, (day_str,))
+            day_present = cursor.fetchone()[0]
+            week_attendance.append(day_present)
+        
+        current_date += timedelta(days=1)
     
     conn.close()
     
@@ -137,7 +186,10 @@ def dashboard():
                           leave_count=leave_count,
                           half_day_count=half_day_count,
                           overtime_hours=overtime_hours,
-                          recent_employees=recent_employees)
+                          recent_employees=recent_employees,
+                          department_distribution=department_distribution,
+                          week_days=week_days,
+                          week_attendance=week_attendance)
 
 # 员工管理
 @app.route('/employees')
@@ -221,11 +273,49 @@ def edit_employee(id):
     cursor.execute("SELECT id, name FROM departments")
     departments = cursor.fetchall()
     
+    # 获取员工考勤信息
+    # 本月出勤天数
+    cursor.execute("""
+        SELECT COUNT(*) FROM attendance 
+        WHERE employee_id = ? AND status = 'present' 
+        AND MONTH(date) = MONTH(GETDATE()) AND YEAR(date) = YEAR(GETDATE())
+    """, (id,))
+    present_days = cursor.fetchone()[0]
+    
+    # 本月请假天数
+    cursor.execute("""
+        SELECT COUNT(*) FROM attendance 
+        WHERE employee_id = ? AND status = 'leave' 
+        AND MONTH(date) = MONTH(GETDATE()) AND YEAR(date) = YEAR(GETDATE())
+    """, (id,))
+    leave_days = cursor.fetchone()[0]
+    
+    # 本月缺勤天数
+    cursor.execute("""
+        SELECT COUNT(*) FROM attendance 
+        WHERE employee_id = ? AND status = 'absent' 
+        AND MONTH(date) = MONTH(GETDATE()) AND YEAR(date) = YEAR(GETDATE())
+    """, (id,))
+    absent_days = cursor.fetchone()[0]
+    
+    # 计算考勤率
+    # 获取当前月的工作日总数（简化处理，以本月当前天数为准）
+    today = datetime.today()
+    _, days_in_month = calendar.monthrange(today.year, today.month)
+    current_day = min(today.day, days_in_month)
+    
+    # 考勤率 = 出勤天数 / 当前月已过天数
+    attendance_rate = round((present_days * 100.0 / current_day) if current_day > 0 else 0, 1)
+    
     conn.close()
     
     return render_template('edit_employee.html', 
                           employee=employee,
-                          departments=departments)
+                          departments=departments,
+                          present_days=present_days,
+                          leave_days=leave_days,
+                          absent_days=absent_days,
+                          attendance_rate=attendance_rate)
 
 # 删除员工
 @app.route('/employees/delete/<int:id>')
@@ -436,11 +526,256 @@ def attendance():
     cursor.execute("SELECT id, name FROM employees")
     employees = cursor.fetchall()
     
+    # 获取员工总数（用于计算出勤率）
+    cursor.execute("SELECT COUNT(*) FROM employees")
+    total_employees = cursor.fetchone()[0]
+    
+    # 获取今日日期
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    # 获取当天考勤统计数据
+    cursor.execute("""
+        SELECT 
+            COUNT(CASE WHEN status = 'present' THEN 1 END) AS present_count,
+            COUNT(CASE WHEN status = 'absent' THEN 1 END) AS absent_count,
+            COUNT(CASE WHEN status = 'leave' THEN 1 END) AS leave_count,
+            COUNT(CASE WHEN status = 'half-day' THEN 1 END) AS half_day_count
+        FROM attendance
+        WHERE date = ?
+    """, today)
+    daily_stats = cursor.fetchone()
+    daily_present = daily_stats[0] if daily_stats and daily_stats[0] else 0
+    daily_absent = daily_stats[1] if daily_stats and daily_stats[1] else 0
+    daily_leave = daily_stats[2] if daily_stats and daily_stats[2] else 0
+    daily_half_day = daily_stats[3] if daily_stats and daily_stats[3] else 0
+    
+    # 获取本周考勤统计数据
+    # 计算本周的开始日期和结束日期
+    today_date = datetime.now()
+    start_of_week = (today_date - timedelta(days=today_date.weekday())).strftime('%Y-%m-%d')
+    end_of_week = (today_date + timedelta(days=6-today_date.weekday())).strftime('%Y-%m-%d')
+    
+    # 获取本周每天的出勤数据
+    week_dates = []
+    current_date = today_date - timedelta(days=today_date.weekday())  # 本周一
+    for i in range(7):  # 本周一到周日
+        if current_date <= today_date:  # 只计算到今天
+            week_dates.append(current_date.strftime('%Y-%m-%d'))
+        current_date += timedelta(days=1)
+    
+    # 初始化本周统计数据
+    weekly_present = 0
+    weekly_absent = 0
+    weekly_leave = 0
+    weekly_half_day = 0
+    weekly_attendance_sum = 0
+    days_counted = 0
+    
+    # 遍历本周每一天，获取出勤数据
+    for date in week_dates:
+        cursor.execute("""
+            SELECT 
+                COUNT(CASE WHEN status = 'present' THEN 1 END) AS present_count,
+                COUNT(CASE WHEN status = 'absent' THEN 1 END) AS absent_count,
+                COUNT(CASE WHEN status = 'leave' THEN 1 END) AS leave_count,
+                COUNT(CASE WHEN status = 'half-day' THEN 1 END) AS half_day_count
+            FROM attendance
+            WHERE date = ?
+        """, date)
+        
+        day_stats = cursor.fetchone()
+        day_present = day_stats[0] if day_stats and day_stats[0] else 0
+        day_absent = day_stats[1] if day_stats and day_stats[1] else 0
+        day_leave = day_stats[2] if day_stats and day_stats[2] else 0
+        day_half_day = day_stats[3] if day_stats and day_stats[3] else 0
+        
+        # 累加各项数据
+        weekly_present += day_present
+        weekly_absent += day_absent
+        weekly_leave += day_leave
+        weekly_half_day += day_half_day
+        
+        # 计算当天出勤率并累加
+        if total_employees > 0:
+            day_attendance_rate = day_present * 100.0 / total_employees
+            weekly_attendance_sum += day_attendance_rate
+        
+        days_counted += 1
+    
+    # 获取本月考勤统计数据
+    # 计算本月的开始日期和结束日期
+    start_of_month = datetime(today_date.year, today_date.month, 1).strftime('%Y-%m-%d')
+    if today_date.month == 12:
+        end_of_month = datetime(today_date.year + 1, 1, 1) - timedelta(days=1)
+    else:
+        end_of_month = datetime(today_date.year, today_date.month + 1, 1) - timedelta(days=1)
+    end_of_month = end_of_month.strftime('%Y-%m-%d')
+    
+    # 获取本月每天的出勤数据
+    month_dates = []
+    current_date = datetime(today_date.year, today_date.month, 1)  # 本月第一天
+    while current_date <= today_date:  # 只计算到今天
+        month_dates.append(current_date.strftime('%Y-%m-%d'))
+        current_date += timedelta(days=1)
+    
+    # 初始化本月统计数据
+    monthly_present = 0
+    monthly_absent = 0
+    monthly_leave = 0
+    monthly_half_day = 0
+    monthly_attendance_sum = 0
+    monthly_days_counted = 0
+    
+    # 遍历本月每一天，获取出勤数据
+    for date in month_dates:
+        cursor.execute("""
+            SELECT 
+                COUNT(CASE WHEN status = 'present' THEN 1 END) AS present_count,
+                COUNT(CASE WHEN status = 'absent' THEN 1 END) AS absent_count,
+                COUNT(CASE WHEN status = 'leave' THEN 1 END) AS leave_count,
+                COUNT(CASE WHEN status = 'half-day' THEN 1 END) AS half_day_count
+            FROM attendance
+            WHERE date = ?
+        """, date)
+        
+        day_stats = cursor.fetchone()
+        day_present = day_stats[0] if day_stats and day_stats[0] else 0
+        day_absent = day_stats[1] if day_stats and day_stats[1] else 0
+        day_leave = day_stats[2] if day_stats and day_stats[2] else 0
+        day_half_day = day_stats[3] if day_stats and day_stats[3] else 0
+        
+        # 累加各项数据
+        monthly_present += day_present
+        monthly_absent += day_absent
+        monthly_leave += day_leave
+        monthly_half_day += day_half_day
+        
+        # 计算当天出勤率并累加
+        if total_employees > 0:
+            day_attendance_rate = day_present * 100.0 / total_employees
+            monthly_attendance_sum += day_attendance_rate
+        
+        monthly_days_counted += 1
+    
+    # 计算日出勤率（使用出勤人数除以员工总数）
+    if total_employees > 0:
+        daily_attendance_rate = round(daily_present * 100.0 / total_employees, 1)
+        daily_absent_rate = round(daily_absent * 100.0 / total_employees, 1)
+        daily_leave_rate = round(daily_leave * 100.0 / total_employees, 1)
+        daily_half_day_rate = round(daily_half_day * 100.0 / total_employees, 1)
+    else:
+        daily_attendance_rate = daily_absent_rate = daily_leave_rate = daily_half_day_rate = 0
+    
+    daily_rates = (daily_attendance_rate, daily_absent_rate, daily_leave_rate, daily_half_day_rate)
+    
+    # 计算周出勤率（使用每天出勤率的平均值）
+    weekly_attendance_rate = round(weekly_attendance_sum / days_counted, 1) if days_counted > 0 else 0
+    # 计算周其他率（使用累计数据除以员工总数和天数）
+    weekly_absent_rate = round(weekly_absent * 100.0 / (total_employees * days_counted), 1) if total_employees > 0 and days_counted > 0 else 0
+    weekly_leave_rate = round(weekly_leave * 100.0 / (total_employees * days_counted), 1) if total_employees > 0 and days_counted > 0 else 0
+    weekly_half_day_rate = round(weekly_half_day * 100.0 / (total_employees * days_counted), 1) if total_employees > 0 and days_counted > 0 else 0
+    weekly_rates = (weekly_attendance_rate, weekly_absent_rate, weekly_leave_rate, weekly_half_day_rate)
+    
+    # 计算月出勤率（使用每天出勤率的平均值）
+    monthly_attendance_rate = round(monthly_attendance_sum / monthly_days_counted, 1) if monthly_days_counted > 0 else 0
+    # 计算月其他率（使用累计数据除以员工总数和天数）
+    monthly_absent_rate = round(monthly_absent * 100.0 / (total_employees * monthly_days_counted), 1) if total_employees > 0 and monthly_days_counted > 0 else 0
+    monthly_leave_rate = round(monthly_leave * 100.0 / (total_employees * monthly_days_counted), 1) if total_employees > 0 and monthly_days_counted > 0 else 0
+    monthly_half_day_rate = round(monthly_half_day * 100.0 / (total_employees * monthly_days_counted), 1) if total_employees > 0 and monthly_days_counted > 0 else 0
+    monthly_rates = (monthly_attendance_rate, monthly_absent_rate, monthly_leave_rate, monthly_half_day_rate)
+    
+    # 获取最近四周加班统计数据
+    cursor.execute("""
+        SELECT 
+            DATEPART(week, date) AS week_number,
+            SUM(overtime_hours) AS total_hours
+        FROM attendance
+        WHERE overtime_hours > 0 
+          AND date >= DATEADD(day, -28, GETDATE())
+        GROUP BY DATEPART(week, date)
+        ORDER BY week_number
+    """)
+    overtime_stats = cursor.fetchall()
+    
+    # 获取最近30天加班总时长
+    cursor.execute("""
+        SELECT SUM(overtime_hours)
+        FROM attendance
+        WHERE date >= DATEADD(day, -30, GETDATE())
+    """)
+    result = cursor.fetchone()
+    total_overtime_hours = round(result[0], 1) if result[0] else 0
+    
+    # 准备加班数据
+    weeks = []
+    overtime_hours = []
+    
+    # 获取当前周数
+    current_week = datetime.now().isocalendar()[1]
+    
+    # 准备最近四周的标签和数据
+    for i in range(4):
+        week_number = current_week - i
+        if week_number <= 0:  # 处理年初的情况
+            week_number = 52 + week_number  # 假设一年有52周
+        
+        weeks.append(f"第{week_number}周")
+        
+        # 查找该周的加班数据
+        found = False
+        for stat in overtime_stats:
+            if stat[0] == week_number:
+                overtime_hours.append(float(stat[1]) if stat[1] else 0)
+                found = True
+                break
+        
+        if not found:
+            overtime_hours.append(0)
+    
+    # 反转列表，使最早的周在前面
+    weeks.reverse()
+    overtime_hours.reverse()
+    
     conn.close()
     
     return render_template('attendance.html', 
                           attendances=attendances,
-                          employees=employees)
+                          employees=employees,
+                          attendance_stats={
+                              'present_count': daily_present,
+                              'absent_count': daily_absent,
+                              'leave_count': daily_leave,
+                              'half_day_count': daily_half_day,
+                              'attendance_rate': daily_rates[0],
+                              'absent_rate': daily_rates[1],
+                              'leave_rate': daily_rates[2],
+                              'half_day_rate': daily_rates[3]
+                          },
+                          weekly_stats={
+                              'present_count': weekly_present,
+                              'absent_count': weekly_absent,
+                              'leave_count': weekly_leave,
+                              'half_day_count': weekly_half_day,
+                              'attendance_rate': weekly_rates[0],
+                              'absent_rate': weekly_rates[1],
+                              'leave_rate': weekly_rates[2],
+                              'half_day_rate': weekly_rates[3]
+                          },
+                          monthly_stats={
+                              'present_count': monthly_present,
+                              'absent_count': monthly_absent,
+                              'leave_count': monthly_leave,
+                              'half_day_count': monthly_half_day,
+                              'attendance_rate': monthly_rates[0],
+                              'absent_rate': monthly_rates[1],
+                              'leave_rate': monthly_rates[2],
+                              'half_day_rate': monthly_rates[3]
+                          },
+                          overtime_stats={
+                              'weeks': weeks,
+                              'hours': overtime_hours,
+                              'total_hours': total_overtime_hours
+                          })
 
 # 添加考勤记录
 @app.route('/attendance/add', methods=['POST'])

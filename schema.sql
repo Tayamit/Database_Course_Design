@@ -151,6 +151,19 @@ INSERT INTO overtime (employee_id, date, start_time, end_time, hours, reason) VA
 (3, DATEADD(DAY, -5, @today), '18:00', '20:00', 2.0, '项目赶工'),
 (8, DATEADD(DAY, -3, @today), '18:00', '19:00', 1.0, '客户会议准备');
 
+-- 添加更多最近的加班记录
+INSERT INTO overtime (employee_id, date, start_time, end_time, hours, reason) VALUES
+(2, @today, '18:00', '20:00', 2.0, '季度报表准备'),
+(4, @yesterday, '18:00', '19:30', 1.5, '客户紧急需求'),
+(5, DATEADD(DAY, -4, @today), '18:00', '21:00', 3.0, '系统维护'),
+(7, DATEADD(DAY, -6, @today), '18:00', '20:30', 2.5, '项目演示准备');
+
+-- 更新考勤表中的加班时间
+UPDATE attendance SET overtime_hours = 2.0 WHERE employee_id = 2 AND date = @today;
+UPDATE attendance SET overtime_hours = 1.5 WHERE employee_id = 4 AND date = @yesterday;
+UPDATE attendance SET overtime_hours = 3.0 WHERE employee_id = 5 AND date = DATEADD(DAY, -4, @today);
+UPDATE attendance SET overtime_hours = 2.5 WHERE employee_id = 7 AND date = DATEADD(DAY, -6, @today);
+
 -- 请假数据
 INSERT INTO leaves (employee_id, start_date, end_date, days, leave_type, reason, applied_on) VALUES
 (9, @yesterday, @yesterday, 1, 'annual', '个人事务', DATEADD(DAY, -3, @today)),
